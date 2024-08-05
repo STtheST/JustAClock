@@ -20,19 +20,29 @@
             width: 100vw;
             font-size: 25vmin;
             text-align: center;
+            cursor: pointer;
         }
     </style>
+    <script>
+        let is24Hour = true;
+        function updateClock() {
+            let now = new Date();
+            let time = now.toLocaleTimeString('en-US', {hour12: !is24Hour});
+            document.getElementById('clock').textContent=time
+        }
+        function toggleFormat() {
+            is24Hour = !is24Hour;
+            updateClock();
+        }
+        function initClock() {
+            setInterval(updateClock, 1000);
+            updateClock();
+            document.getElementById('clock').addEventListener('click', toggleFormat);
+        }
+        document.addEventListener('DOMContentLoaded', initClock);
+    </script>
 </head>
 <body>
     <div id="clock"></div>
-    <script>
-        function updateClock() {
-            let now = new Date();
-            let time = now.toLocaleTimeString('en-US', {hour12: false});
-            document.getElementById('clock').textContent=time
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-    </script>
 </body>
 </html>
