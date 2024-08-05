@@ -8,6 +8,7 @@ This is a minimalist, offline digital clock designed to turn any spare screen in
 - Toggle between 12-hour and 24-hour formats with a click
 - Anti-burn-in measures to protect your screen
 - Keeps the screen active to continuously display time
+- Cursor auto-hide for a cleaner display
 
 ## Usage
 1. Download the HTML file
