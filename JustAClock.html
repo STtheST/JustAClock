@@ -23,11 +23,13 @@
             font-size: 25vmin;
             text-align: center;
             cursor: pointer;
+            transition: transform 0.5s ease;
         }
     </style>
     <script>
         let is24Hour = true;
         let wakeLock = null;
+        let clock;
         async function requestWakeLock() {
             try {
                 wakeLock = await navigator.wakeLock.request("screen");
@@ -36,19 +38,35 @@
                 statusElem.textContent = `${err.name}, ${err.message}`;
             }
         }
+        function antiBurnIn() {
+            let x = Math.random() * 4 - 2;
+            let y = Math.random() * 4 - 2;
+            let currentTransform = window.getComputedStyle(clock).getPropertyValue('transform');
+            let matrix = new DOMMatrix(currentTransform);
+            let currentX = matrix.m41;
+            let currentY = matrix.m42;
+            if (Math.abs(currentX + x) > 10) x = -currentX;
+            if (Math.abs(currentY + y) > 10) y = -currentY;
+            clock.style.transform = `translate(${currentX + x}px, ${currentY + y}px)`;
+        }
         function updateClock() {
             let now = new Date();
             let time = now.toLocaleTimeString('en-US', { hour12: !is24Hour });
-            document.getElementById('clock').textContent = time
+            clock.textContent = time
         }
         function toggleFormat() {
             is24Hour = !is24Hour;
             updateClock();
         }
-        function initClock() {
-            setInterval(updateClock, 1000);
+        function clockCycle() {
             updateClock();
-            document.getElementById('clock').addEventListener('click', toggleFormat);
+            antiBurnIn();
+        }
+        function initClock() {
+            clock = document.getElementById('clock');
+            setInterval(clockCycle, 1000);
+            updateClock();
+            clock.addEventListener('click', toggleFormat);
             requestWakeLock();
             document.addEventListener('visibilitychange', async () => {
                 if (wakeLock !== null && document.visibilityState === 'visible') {
