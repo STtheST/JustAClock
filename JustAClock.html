@@ -1,92 +1,67 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <title>Just a Clock</title>
+    <meta charset="UTF-8">
+    <title>Clock</title>
     <style>
         body {
             background: black;
             color: white;
-            height: 100%;
-            padding: 0;
             margin: 0;
-            overflow: hidden;
-            cursor: none;
-        }
-
-        #clock {
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            width: 100vw;
             font-size: 25vmin;
-            text-align: center;
-            /* cursor: pointer; */
-            transition: transform 60s ease;
+            cursor: none;
+            user-select: none;
+        }
+
+        #clock {
+            transition: transform 60s;
         }
     </style>
-    <script>
-        let is24Hour = true;
-        let wakeLock = null;
-        let clock;
-        let currentX = 0, currentY = 0;
-        let cursorTimeout;
-        function toggleCursor(show) {
-            document.body.style.cursor = show ? 'default' : 'none';
-        }
-        async function requestWakeLock() {
-            try {
-                wakeLock = await navigator.wakeLock.request("screen");
-            } catch (err) {
-                console.error(`Wake Lock error: ${err.name}, ${err.message}`);
-            }
-        }
-        function antiBurnIn() {
-            let x = Math.random() * 6 - 3;
-            let y = Math.random() * 6 - 3;
-            currentX += x;
-            currentY += y;
-            if (Math.abs(currentX + x) > 10) x = -currentX;
-            if (Math.abs(currentY + y) > 10) y = -currentY;
-            clock.style.transform = `translate(${currentX + x}px, ${currentY + y}px)`;
-        }
-        function updateClock() {
-            let now = new Date();
-            let time = now.toLocaleTimeString('en-US', { hour12: !is24Hour });
-            clock.textContent = time
-        }
-        function toggleFormat() {
-            is24Hour = !is24Hour;
-            updateClock();
-        }
-        function showCursor() {
-            toggleCursor(true);
-            clearTimeout(cursorTimeout);
-            cursorTimeout = setTimeout(() => toggleCursor(false), 3000);
-        }
-        function initClock() {
-            clock = document.getElementById('clock');
-            setInterval(updateClock, 1000);
-            setInterval(antiBurnIn, 60000);
-            updateClock();
-            clock.addEventListener('click', toggleFormat);
-            requestWakeLock();
-            document.addEventListener('visibilitychange', async () => {
-                if (wakeLock !== null && document.visibilityState === 'visible') {
-                    await requestWakeLock();
-                }
-            });
-            ['mousemove', 'mousedown', 'keydown'].forEach(event => document.addEventListener(event, showCursor));
-            toggleCursor(false);
-        }
-        document.addEventListener('DOMContentLoaded', initClock);
-    </script>
 </head>
 
 <body>
     <div id="clock"></div>
+    <script>
+        const clock = document.getElementById('clock');
+        let is24 = true, wakeLock = null;
+        let currentX = 0, currentY = 0;
+        const maxOffset = 20;
+        function updateClock() {
+            const now = new Date();
+            clock.textContent = now.toLocaleTimeString('en-US', { hour12: !is24 });
+        }
+        function antiBurnIn() {
+            const newX = (currentX + Math.random() * 10 - 5);
+            const newY = (currentY + Math.random() * 10 - 5);
+            currentX = Math.abs(newX) > maxOffset ? -newX : newX;
+            currentY = Math.abs(newY) > maxOffset ? -newY : newY;
+            clock.style.transform = `translate(${currentX}px, ${currentY}px)`;
+        }
+        async function lockWake() {
+            try {
+                wakeLock = await navigator.wakeLock.request('screen');
+            } catch (err) {
+                console.error('Wake Lock error:', err);
+            }
+        }
+        document.onclick = () => { is24 = !is24; updateClock(); };
+        document.onmousemove = () => {
+            document.body.style.cursor = 'default';
+            clearTimeout(document.cursorTimeout);
+            document.cursorTimeout = setTimeout(() => document.body.style.cursor = 'none', 3000);
+        };
+        setInterval(updateClock, 1000);
+        setInterval(antiBurnIn, 60000);
+        document.onvisibilitychange = () => document.visibilityState === 'visible' && lockWake();
+        updateClock();
+        antiBurnIn();
+        lockWake();
+    </script>
 </body>
 
 </html>
