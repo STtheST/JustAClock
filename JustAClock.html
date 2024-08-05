@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Just a Clock</title>
+    <style>
+        body {
+            background: black;
+            color: white;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+        #clock {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            font-size: 25vmin;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="clock"></div>
+    <script>
+        function updateClock() {
+            let now = new Date();
+            let time = now.toLocaleTimeString('en-US', {hour12: false});
+            document.getElementById('clock').textContent=time
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+</body>
+</html>
