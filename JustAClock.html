@@ -12,6 +12,7 @@
             padding: 0;
             margin: 0;
             overflow: hidden;
+            cursor: none;
         }
 
         #clock {
@@ -22,8 +23,8 @@
             width: 100vw;
             font-size: 25vmin;
             text-align: center;
-            cursor: pointer;
-            transition: transform 60s linear;
+            /* cursor: pointer; */
+            transition: transform 60s ease;
         }
     </style>
     <script>
@@ -31,12 +32,15 @@
         let wakeLock = null;
         let clock;
         let currentX = 0, currentY = 0;
+        let cursorTimeout;
+        function toggleCursor(show) {
+            document.body.style.cursor = show ? 'default' : 'none';
+        }
         async function requestWakeLock() {
             try {
                 wakeLock = await navigator.wakeLock.request("screen");
-                statusElem.textContent = "Wake Lock is active!";
             } catch (err) {
-                statusElem.textContent = `${err.name}, ${err.message}`;
+                console.error(`Wake Lock error: ${err.name}, ${err.message}`);
             }
         }
         function antiBurnIn() {
@@ -57,13 +61,13 @@
             is24Hour = !is24Hour;
             updateClock();
         }
-        // function clockCycle() {
-        //     updateClock();
-        //     antiBurnIn();
-        // }
+        function showCursor() {
+            toggleCursor(true);
+            clearTimeout(cursorTimeout);
+            cursorTimeout = setTimeout(() => toggleCursor(false), 3000);
+        }
         function initClock() {
             clock = document.getElementById('clock');
-            // setInterval(clockCycle, 1000);
             setInterval(updateClock, 1000);
             setInterval(antiBurnIn, 60000);
             updateClock();
@@ -74,6 +78,8 @@
                     await requestWakeLock();
                 }
             });
+            ['mousemove', 'mousedown', 'keydown'].forEach(event => document.addEventListener(event, showCursor));
+            toggleCursor(false);
         }
         document.addEventListener('DOMContentLoaded', initClock);
     </script>
