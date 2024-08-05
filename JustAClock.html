@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8" />
     <title>Just a Clock</title>
@@ -12,6 +13,7 @@
             margin: 0;
             overflow: hidden;
         }
+
         #clock {
             display: flex;
             justify-content: center;
@@ -25,10 +27,19 @@
     </style>
     <script>
         let is24Hour = true;
+        let wakeLock = null;
+        async function requestWakeLock() {
+            try {
+                wakeLock = await navigator.wakeLock.request("screen");
+                statusElem.textContent = "Wake Lock is active!";
+            } catch (err) {
+                statusElem.textContent = `${err.name}, ${err.message}`;
+            }
+        }
         function updateClock() {
             let now = new Date();
-            let time = now.toLocaleTimeString('en-US', {hour12: !is24Hour});
-            document.getElementById('clock').textContent=time
+            let time = now.toLocaleTimeString('en-US', { hour12: !is24Hour });
+            document.getElementById('clock').textContent = time
         }
         function toggleFormat() {
             is24Hour = !is24Hour;
@@ -38,11 +49,19 @@
             setInterval(updateClock, 1000);
             updateClock();
             document.getElementById('clock').addEventListener('click', toggleFormat);
+            requestWakeLock();
+            document.addEventListener('visibilitychange', async () => {
+                if (wakeLock !== null && document.visibilityState === 'visible') {
+                    await requestWakeLock();
+                }
+            });
         }
         document.addEventListener('DOMContentLoaded', initClock);
     </script>
 </head>
+
 <body>
     <div id="clock"></div>
 </body>
+
 </html>
