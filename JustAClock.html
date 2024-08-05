@@ -23,13 +23,14 @@
             font-size: 25vmin;
             text-align: center;
             cursor: pointer;
-            transition: transform 0.5s ease;
+            transition: transform 60s ease;
         }
     </style>
     <script>
         let is24Hour = true;
         let wakeLock = null;
         let clock;
+        let currentX = 0, currentY = 0;
         async function requestWakeLock() {
             try {
                 wakeLock = await navigator.wakeLock.request("screen");
@@ -39,12 +40,10 @@
             }
         }
         function antiBurnIn() {
-            let x = Math.random() * 4 - 2;
-            let y = Math.random() * 4 - 2;
-            let currentTransform = window.getComputedStyle(clock).getPropertyValue('transform');
-            let matrix = new DOMMatrix(currentTransform);
-            let currentX = matrix.m41;
-            let currentY = matrix.m42;
+            let x = Math.random() * 6 - 3;
+            let y = Math.random() * 6 - 3;
+            currentX += x;
+            currentY += y;
             if (Math.abs(currentX + x) > 10) x = -currentX;
             if (Math.abs(currentY + y) > 10) y = -currentY;
             clock.style.transform = `translate(${currentX + x}px, ${currentY + y}px)`;
@@ -58,13 +57,15 @@
             is24Hour = !is24Hour;
             updateClock();
         }
-        function clockCycle() {
-            updateClock();
-            antiBurnIn();
-        }
+        // function clockCycle() {
+        //     updateClock();
+        //     antiBurnIn();
+        // }
         function initClock() {
             clock = document.getElementById('clock');
-            setInterval(clockCycle, 1000);
+            // setInterval(clockCycle, 1000);
+            setInterval(updateClock, 1000);
+            setInterval(antiBurnIn, 60000);
             updateClock();
             clock.addEventListener('click', toggleFormat);
             requestWakeLock();
